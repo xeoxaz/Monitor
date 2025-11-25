@@ -15,13 +15,35 @@ const LOG_LEVEL_ORDER: Record<LogLevel, number> = {
   error: 3,
 };
 
-const COLORS = {
-  debug: '\x1b[36m', // Cyan
-  warn: '\x1b[33m',  // Orange/Yellow
-  error: '\x1b[31m', // Red
-  info: '\x1b[0m',   // Reset/Default
-  reset: '\x1b[0m',
+// Color codes
+const BRACKET_COLOR = '\x1b[90m'; // Dark gray for brackets
+const TIME_COLOR = '\x1b[37m';    // Light gray for time
+
+// Color schemes for each log level (dark, mid, bright)
+const COLOR_SCHEMES: Record<LogLevel, { classname: string; status: string; message: string }> = {
+  debug: {
+    classname: '\x1b[36m',  // Dark cyan
+    status: '\x1b[96m',     // Bright cyan
+    message: '\x1b[96m',    // Bright cyan
+  },
+  info: {
+    classname: '\x1b[90m',  // Dark gray
+    status: '\x1b[37m',     // Light gray
+    message: '\x1b[97m',    // White
+  },
+  warn: {
+    classname: '\x1b[33m',  // Dark yellow/orange
+    status: '\x1b[93m',     // Bright yellow
+    message: '\x1b[93m',    // Bright yellow
+  },
+  error: {
+    classname: '\x1b[31m',  // Dark red
+    status: '\x1b[91m',     // Bright red
+    message: '\x1b[91m',    // Bright red
+  },
 };
+
+const RESET = '\x1b[0m';
 
 const LEVEL_NAMES: Record<LogLevel, string> = {
   debug: 'Debug',
@@ -87,19 +109,52 @@ export class Monitor {
   private formatMessage(level: LogLevel, message: string, withColor: boolean): string {
     const timestamp = this.getTimestamp();
     const levelName = LEVEL_NAMES[level];
-    const color = withColor ? COLORS[level] : '';
-    const reset = withColor ? COLORS.reset : '';
-
-    let formatted: string;
-
-    if (this.hasClassColumn) {
-      const classColumn = `[${this.trimmedClassName}]`.padEnd(this.classColumnWidth);
-      formatted = `${timestamp} ${classColumn} ${levelName.padEnd(STATE_COLUMN_WIDTH)} ${message}`;
-    } else {
-      formatted = `${timestamp} ${levelName.padEnd(STATE_COLUMN_WIDTH)} ${message}`;
+    
+    if (!withColor) {
+      // Plain text version (for file output)
+      if (this.hasClassColumn) {
+        const classColumn = `[${this.trimmedClassName}]`.padEnd(this.classColumnWidth);
+        return `${timestamp} ${classColumn} ${levelName.padEnd(STATE_COLUMN_WIDTH)} ${message}`;
+      } else {
+        return `${timestamp} ${levelName.padEnd(STATE_COLUMN_WIDTH)} ${message}`;
+      }
     }
 
-    return `${color}${formatted}${reset}`;
+    // Colored version (for console output)
+    const colors = COLOR_SCHEMES[level];
+    
+    // Time with brackets in dark gray, time in gray
+    const timeContent = timestamp.slice(1, -1); // Remove brackets
+    const timePart = `${BRACKET_COLOR}[${TIME_COLOR}${timeContent}${BRACKET_COLOR}]${RESET}`;
+    
+    let formatted: string;
+    
+    if (this.hasClassColumn) {
+      // Build colored class column, then pad with spaces (after reset code)
+      const coloredClassColumn = `${BRACKET_COLOR}[${colors.classname}${this.trimmedClassName}${BRACKET_COLOR}]${RESET}`;
+      const paddingNeeded = this.classColumnWidth - `[${this.trimmedClassName}]`.length;
+      const classColumn = coloredClassColumn + ' '.repeat(Math.max(0, paddingNeeded));
+      
+      // Status in mid/bright shade - pad plain text first, then add colors
+      const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
+      const statusPart = `${colors.status}${plainStatus}${RESET}`;
+      
+      // Message in bright shade
+      const messagePart = `${colors.message}${message}${RESET}`;
+      
+      formatted = `${timePart} ${classColumn} ${statusPart} ${messagePart}`;
+    } else {
+      // Status in mid/bright shade - pad plain text first, then add colors
+      const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
+      const statusPart = `${colors.status}${plainStatus}${RESET}`;
+      
+      // Message in bright shade
+      const messagePart = `${colors.message}${message}${RESET}`;
+      
+      formatted = `${timePart} ${statusPart} ${messagePart}`;
+    }
+    
+    return formatted;
   }
 
   private async writeToFile(message: string): Promise<void> {

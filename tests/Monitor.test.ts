@@ -50,7 +50,7 @@ describe('Monitor', () => {
     test('timestamp format should be HH:MM:SS', () => {
       const monitor = new Monitor('TestClass');
       const timestampRegex = /\[\d{2}:\d{2}:\d{2}\]/;
-
+      
       // Capture console.log output
       const originalLog = console.log;
       let loggedMessage = '';
@@ -59,7 +59,10 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test message');
-      expect(timestampRegex.test(loggedMessage)).toBe(true);
+      
+      // Strip ANSI codes for comparison
+      const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
+      expect(timestampRegex.test(stripped)).toBe(true);
 
       console.log = originalLog;
     });
@@ -96,7 +99,10 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test');
-      expect(loggedMessage).toContain('[VeryLongCl]');
+      
+      // Strip ANSI codes for comparison
+      const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
+      expect(stripped).toContain('[VeryLongCl]');
 
       console.log = originalLog;
     });
@@ -112,8 +118,12 @@ describe('Monitor', () => {
 
       monitor.info('Test message');
 
-      // Should not contain class brackets
-      expect(loggedMessage).not.toMatch(/\[\w+\]/);
+      // Strip ANSI codes for comparison
+      const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
+      // Should not contain class brackets (only timestamp brackets)
+      // Check that there's only one set of brackets (the timestamp)
+      const bracketMatches = stripped.match(/\[[^\]]+\]/g);
+      expect(bracketMatches?.length).toBe(1); // Only timestamp brackets
       // Should contain timestamp and level
       expect(loggedMessage).toContain('Info');
       expect(loggedMessage).toContain('Test message');
@@ -131,7 +141,12 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test');
-      expect(loggedMessage).not.toMatch(/\[\w+\]/);
+      
+      // Strip ANSI codes for comparison
+      const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
+      // Should not contain class brackets (only timestamp brackets)
+      // Timestamp is [HH:MM:SS], so we check for brackets with word chars (classname)
+      expect(stripped).not.toMatch(/\[\w+\]/);
 
       console.log = originalLog;
     });
