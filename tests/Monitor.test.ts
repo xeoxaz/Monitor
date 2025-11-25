@@ -50,7 +50,7 @@ describe('Monitor', () => {
     test('timestamp format should be HH:MM:SS', () => {
       const monitor = new Monitor('TestClass');
       const timestampRegex = /\[\d{2}:\d{2}:\d{2}\]/;
-      
+
       // Capture console.log output
       const originalLog = console.log;
       let loggedMessage = '';
@@ -59,7 +59,7 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test message');
-      
+
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
       expect(timestampRegex.test(stripped)).toBe(true);
@@ -99,7 +99,7 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test');
-      
+
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
       expect(stripped).toContain('[VeryLongCl]');
@@ -141,7 +141,7 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test');
-      
+
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
       // Should not contain class brackets (only timestamp brackets)
