@@ -15,9 +15,29 @@ const LOG_LEVEL_ORDER: Record<LogLevel, number> = {
   error: 3,
 };
 
+// Symbol table (Braille-like symbols)
+const SYMBOLS = [
+  '⠁', '⠂', '⠃', '⠄', '⠅', '⠆', '⠇', '⠈', '⠉', '⠊', '⠋', '⠌', '⠍', '⠎', '⠏',
+  '⠐', '⠑', '⠒', '⠓', '⠔', '⠕', '⠖', '⠗', '⠘', '⠙', '⠚', '⠛', '⠜', '⠝', '⠞', '⠟',
+  '⠠', '⠡', '⠢', '⠣', '⠤', '⠥', '⠦', '⠧', '⠨', '⠩', '⠪', '⠫', '⠬', '⠭', '⠮', '⠯',
+  '⠰', '⠱', '⠲', '⠳', '⠴', '⠵', '⠶', '⠷', '⠸', '⠹', '⠺', '⠻', '⠼', '⠽', '⠾', '⠿',
+  '⡀', '⡁', '⡂', '⡃', '⡄', '⡅', '⡆', '⡇', '⡈', '⡉', '⡊', '⡋', '⡌', '⡍', '⡎', '⡏',
+  '⡐', '⡑', '⡒', '⡓', '⡔', '⡕', '⡖', '⡗', '⡘', '⡙', '⡚', '⡛', '⡜', '⡝', '⡞', '⡟',
+  '⡠', '⡡', '⡢', '⡣', '⡤', '⡥', '⡦', '⡧', '⡨', '⡩', '⡪', '⡫', '⡬', '⡭', '⡮', '⡯',
+  '⡰', '⡱', '⡲', '⡳', '⡴', '⡵', '⡶', '⡷', '⡸', '⡹', '⡺', '⡻', '⡼', '⡽', '⡾', '⡿',
+  '⢀', '⢁', '⢂', '⢃', '⢄', '⢅', '⢆', '⢇', '⢈', '⢉', '⢊', '⢋', '⢌', '⢍', '⢎', '⢏',
+  '⢐', '⢑', '⢒', '⢓', '⢔', '⢕', '⢖', '⢗', '⢘', '⢙', '⢚', '⢛', '⢜', '⢝', '⢞', '⢟',
+  '⢠', '⢡', '⢢', '⢣', '⢤', '⢥', '⢦', '⢧', '⢨', '⢩', '⢪', '⢫', '⢬', '⢭', '⢮', '⢯',
+  '⢰', '⢱', '⢲', '⢳', '⢴', '⢵', '⢶', '⢷', '⢸', '⢹', '⢺', '⢻', '⢼', '⢽', '⢾', '⢿',
+  '⣀', '⣁', '⣂', '⣃', '⣄', '⣅', '⣆', '⣇', '⣈', '⣉', '⣊', '⣋', '⣌', '⣍', '⣎', '⣏',
+  '⣐', '⣑', '⣒', '⣓', '⣔', '⣕', '⣖', '⣗', '⣘', '⣙', '⣚', '⣛', '⣜', '⣝', '⣞', '⣟',
+  '⣠', '⣡', '⣢', '⣣', '⣤', '⣥', '⣦', '⣧', '⣨', '⣩', '⣪', '⣫', '⣬', '⣭', '⣮', '⣯',
+  '⣰', '⣱', '⣲', '⣳', '⣴', '⣵', '⣶', '⣷', '⣸', '⣹', '⣺', '⣻', '⣼', '⣽', '⣾', '⣿',
+];
+
 // Color codes
-const BRACKET_COLOR = '\x1b[90m'; // Dark gray for brackets
-const TIME_COLOR = '\x1b[37m';    // Light gray for time
+const SEPARATOR_COLOR = '\x1b[90m'; // Dark gray for separators
+const TIME_COLOR = '\x1b[90m';       // Dark gray for time
 
 // Color schemes for each log level (dark, mid, bright)
 const COLOR_SCHEMES: Record<LogLevel, { classname: string; status: string; message: string }> = {
@@ -63,6 +83,12 @@ export class Monitor {
   private options: Required<Omit<MonitorOptions, 'logFilePath'>> & { logFilePath: string };
   private minLogLevel: number;
   private fileWritePromise: Promise<void> = Promise.resolve();
+  private symbols: {
+    time: string;
+    classname: string;
+    status: string;
+    message: string;
+  };
 
   constructor(className?: string, options: MonitorOptions = {}) {
     // Process classname
@@ -72,7 +98,7 @@ export class Monitor {
         ? className.substring(0, maxLength)
         : className;
       this.className = this.trimmedClassName;
-      this.classColumnWidth = `[${this.trimmedClassName}]`.length;
+      this.classColumnWidth = this.trimmedClassName.length;
       this.hasClassColumn = true;
     } else {
       this.className = null;
@@ -91,6 +117,14 @@ export class Monitor {
     };
 
     this.minLogLevel = LOG_LEVEL_ORDER[this.options.logLevel];
+
+    // Assign random symbols for each column (consistent per instance)
+    this.symbols = {
+      time: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      classname: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      status: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      message: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+    };
   }
 
   private getTimestamp(): string {
@@ -98,7 +132,7 @@ export class Monitor {
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
-    return `[${hours}:${minutes}:${seconds}]`;
+    return `${hours}:${minutes}:${seconds}`;
   }
 
   private stripAnsiCodes(text: string): string {
@@ -109,51 +143,49 @@ export class Monitor {
   private formatMessage(level: LogLevel, message: string, withColor: boolean): string {
     const timestamp = this.getTimestamp();
     const levelName = LEVEL_NAMES[level];
-
+    
     if (!withColor) {
-      // Plain text version (for file output)
+      // Plain text version (for file output) - no symbols, just spaces
       if (this.hasClassColumn) {
-        const classColumn = `[${this.trimmedClassName}]`.padEnd(this.classColumnWidth);
+        const classColumn = this.trimmedClassName!.padEnd(this.classColumnWidth);
         return `${timestamp} ${classColumn} ${levelName.padEnd(STATE_COLUMN_WIDTH)} ${message}`;
       } else {
         return `${timestamp} ${levelName.padEnd(STATE_COLUMN_WIDTH)} ${message}`;
       }
     }
 
-    // Colored version (for console output)
+    // Colored version (for console output) with symbols
     const colors = COLOR_SCHEMES[level];
-
-    // Time with brackets in dark gray, time in gray
-    const timeContent = timestamp.slice(1, -1); // Remove brackets
-    const timePart = `${BRACKET_COLOR}[${TIME_COLOR}${timeContent}${BRACKET_COLOR}]${RESET}`;
-
+    
+    // Time in dark gray with symbol
+    const timePart = `${TIME_COLOR}${timestamp}${RESET} ${SEPARATOR_COLOR}${this.symbols.time}${RESET}`;
+    
     let formatted: string;
-
+    
     if (this.hasClassColumn) {
-      // Build colored class column, then pad with spaces (after reset code)
-      const coloredClassColumn = `${BRACKET_COLOR}[${colors.classname}${this.trimmedClassName}${BRACKET_COLOR}]${RESET}`;
-      const paddingNeeded = this.classColumnWidth - `[${this.trimmedClassName}]`.length;
-      const classColumn = coloredClassColumn + ' '.repeat(Math.max(0, paddingNeeded));
-
-      // Status in mid/bright shade - pad plain text first, then add colors
+      // Classname with color and symbol
+      const classColumn = `${colors.classname}${this.trimmedClassName}${RESET}`.padEnd(this.classColumnWidth + colors.classname.length + RESET.length);
+      const classPart = `${classColumn} ${SEPARATOR_COLOR}${this.symbols.classname}${RESET}`;
+      
+      // Status in mid/bright shade with symbol
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
-      const statusPart = `${colors.status}${plainStatus}${RESET}`;
-
-      // Message in bright shade
-      const messagePart = `${colors.message}${message}${RESET}`;
-
-      formatted = `${timePart} ${classColumn} ${statusPart} ${messagePart}`;
+      const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${this.symbols.status}${RESET}`;
+      
+      // Message in bright shade (symbol comes before message)
+      const messagePart = `${SEPARATOR_COLOR}${this.symbols.message}${RESET} ${colors.message}${message}${RESET}`;
+      
+      formatted = `${timePart} ${classPart} ${statusPart} ${messagePart}`;
     } else {
-      // Status in mid/bright shade - pad plain text first, then add colors
+      // Status in mid/bright shade with symbol
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
-      const statusPart = `${colors.status}${plainStatus}${RESET}`;
-
-      // Message in bright shade
-      const messagePart = `${colors.message}${message}${RESET}`;
-
+      const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${this.symbols.status}${RESET}`;
+      
+      // Message in bright shade (symbol comes before message)
+      const messagePart = `${SEPARATOR_COLOR}${this.symbols.message}${RESET} ${colors.message}${message}${RESET}`;
+      
       formatted = `${timePart} ${statusPart} ${messagePart}`;
     }
-
+    
     return formatted;
   }
 

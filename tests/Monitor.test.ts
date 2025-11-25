@@ -49,8 +49,8 @@ describe('Monitor', () => {
 
     test('timestamp format should be HH:MM:SS', () => {
       const monitor = new Monitor('TestClass');
-      const timestampRegex = /\[\d{2}:\d{2}:\d{2}\]/;
-
+      const timestampRegex = /\d{2}:\d{2}:\d{2}/;
+      
       // Capture console.log output
       const originalLog = console.log;
       let loggedMessage = '';
@@ -59,7 +59,7 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test message');
-
+      
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
       expect(timestampRegex.test(stripped)).toBe(true);
@@ -82,8 +82,8 @@ describe('Monitor', () => {
 
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
-      // Should contain trimmed classname (20 chars max)
-      expect(stripped).toMatch(/\[VeryLongClassNameTh[a-z]?\]/);
+      // Should contain trimmed classname (20 chars max) - no brackets
+      expect(stripped).toMatch(/VeryLongClassNameTh[a-z]?/);
       expect(stripped).not.toContain('VeryLongClassNameThatExceedsLimit');
 
       console.log = originalLog;
@@ -102,7 +102,7 @@ describe('Monitor', () => {
 
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
-      expect(stripped).toContain('[VeryLongCl]');
+      expect(stripped).toContain('VeryLongCl');
 
       console.log = originalLog;
     });
@@ -120,10 +120,11 @@ describe('Monitor', () => {
 
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
-      // Should not contain class brackets (only timestamp brackets)
-      // Check that there's only one set of brackets (the timestamp)
-      const bracketMatches = stripped.match(/\[[^\]]+\]/g);
-      expect(bracketMatches?.length).toBe(1); // Only timestamp brackets
+      // Should not contain classname (no class column when no classname provided)
+      // Should only contain timestamp, status, and message
+      expect(stripped).toContain('Info');
+      expect(stripped).toContain('Test message');
+      expect(stripped).toMatch(/\d{2}:\d{2}:\d{2}/); // Timestamp format
       // Should contain timestamp and level
       expect(loggedMessage).toContain('Info');
       expect(loggedMessage).toContain('Test message');
@@ -169,10 +170,10 @@ describe('Monitor', () => {
       // Strip ANSI codes for comparison
       const stripped1 = messages[0].replace(/\x1b\[[0-9;]*m/g, '');
       const stripped2 = messages[1].replace(/\x1b\[[0-9;]*m/g, '');
-
-      // Both should have consistent structure
-      expect(stripped1).toMatch(/^\[\d{2}:\d{2}:\d{2}\] \[Short\].*Info.*Message 1/);
-      expect(stripped2).toMatch(/^\[\d{2}:\d{2}:\d{2}\] \[VeryLongClassName\].*Info.*Message 2/);
+      
+      // Both should have consistent structure (no brackets, with symbols)
+      expect(stripped1).toMatch(/^\d{2}:\d{2}:\d{2}.*Short.*Info.*Message 1/);
+      expect(stripped2).toMatch(/^\d{2}:\d{2}:\d{2}.*VeryLongClassName.*Info.*Message 2/);
 
       console.log = originalLog;
     });
@@ -190,9 +191,9 @@ describe('Monitor', () => {
 
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
-
-      // Format should be [time] Level Message
-      expect(stripped).toMatch(/^\[\d{2}:\d{2}:\d{2}\] Info.*Test message/);
+      
+      // Format should be time Level Message (no brackets)
+      expect(stripped).toMatch(/^\d{2}:\d{2}:\d{2}.*Info.*Test message/);
 
       console.log = originalLog;
     });
