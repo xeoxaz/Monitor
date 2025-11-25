@@ -1,6 +1,6 @@
 {
   "name": "@frostal/monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple, colorful logger class for Bun with TypeScript support, file logging, and column-aligned output",
   "type": "module",
   "main": "./src/Monitor.ts",
@@ -40,4 +40,3 @@
     "@types/bun": "latest"
   }
 }
-
