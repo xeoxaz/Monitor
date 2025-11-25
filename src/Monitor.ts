@@ -83,12 +83,6 @@ export class Monitor {
   private options: Required<Omit<MonitorOptions, 'logFilePath'>> & { logFilePath: string };
   private minLogLevel: number;
   private fileWritePromise: Promise<void> = Promise.resolve();
-  private symbols: {
-    time: string;
-    classname: string;
-    status: string;
-    message: string;
-  };
 
   constructor(className?: string, options: MonitorOptions = {}) {
     // Process classname
@@ -117,14 +111,6 @@ export class Monitor {
     };
 
     this.minLogLevel = LOG_LEVEL_ORDER[this.options.logLevel];
-
-    // Assign random symbols for each column (consistent per instance)
-    this.symbols = {
-      time: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      classname: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      status: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      message: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-    };
   }
 
   private getTimestamp(): string {
@@ -155,33 +141,40 @@ export class Monitor {
     }
 
     // Colored version (for console output) with symbols
+    // Generate random symbols for each log call
+    const timeSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+    const classnameSymbol = this.hasClassColumn ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)] : '';
+    const statusSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+    const messageSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+    
     const colors = COLOR_SCHEMES[level];
 
     // Time in dark gray with symbol
-    const timePart = `${TIME_COLOR}${timestamp}${RESET} ${SEPARATOR_COLOR}${this.symbols.time}${RESET}`;
+    const timePart = `${TIME_COLOR}${timestamp}${RESET} ${SEPARATOR_COLOR}${timeSymbol}${RESET}`;
 
     let formatted: string;
 
     if (this.hasClassColumn) {
       // Classname with color and symbol
       const classColumn = `${colors.classname}${this.trimmedClassName}${RESET}`.padEnd(this.classColumnWidth + colors.classname.length + RESET.length);
-      const classPart = `${classColumn} ${SEPARATOR_COLOR}${this.symbols.classname}${RESET}`;
+      const classPart = `${classColumn} ${SEPARATOR_COLOR}${classnameSymbol}${RESET}`;
 
       // Status in mid/bright shade with symbol
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
-      const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${this.symbols.status}${RESET}`;
+      const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${statusSymbol}${RESET}`;
 
       // Message in bright shade (symbol comes before message)
-      const messagePart = `${SEPARATOR_COLOR}${this.symbols.message}${RESET} ${colors.message}${message}${RESET}`;
+      const messagePart = `${SEPARATOR_COLOR}${messageSymbol}${RESET} ${colors.message}${message}${RESET}`;
 
       formatted = `${timePart} ${classPart} ${statusPart} ${messagePart}`;
     } else {
+      // No classname - skip classname symbol, go directly to status
       // Status in mid/bright shade with symbol
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
-      const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${this.symbols.status}${RESET}`;
+      const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${statusSymbol}${RESET}`;
 
       // Message in bright shade (symbol comes before message)
-      const messagePart = `${SEPARATOR_COLOR}${this.symbols.message}${RESET} ${colors.message}${message}${RESET}`;
+      const messagePart = `${SEPARATOR_COLOR}${messageSymbol}${RESET} ${colors.message}${message}${RESET}`;
 
       formatted = `${timePart} ${statusPart} ${messagePart}`;
     }
