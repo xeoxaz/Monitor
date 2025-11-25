@@ -1,0 +1,39 @@
+{
+  "name": "@frostal/monitor",
+  "version": "1.0.0",
+  "description": "A simple, colorful logger class for Bun with TypeScript support, file logging, and column-aligned output",
+  "type": "module",
+  "main": "./src/Monitor.ts",
+  "types": "./src/Monitor.ts",
+  "exports": {
+    ".": {
+      "import": "./src/Monitor.ts",
+      "types": "./src/Monitor.ts"
+    }
+  },
+  "scripts": {
+    "test": "bun test",
+    "test:watch": "bun test --watch"
+  },
+  "keywords": [
+    "logger",
+    "logging",
+    "bun",
+    "typescript",
+    "console",
+    "file-logging"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frostal/Monitor.git"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
+
