@@ -1,5 +1,9 @@
 # Monitor
 
+![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Bun](https://img.shields.io/badge/Bun-1.0+-black?logo=bun)
+
 A simple, colorful logger class for Bun with TypeScript support, file logging, and column-aligned output.
 
 ## Features
