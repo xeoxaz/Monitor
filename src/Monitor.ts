@@ -145,8 +145,7 @@ export class Monitor {
     const timeSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
     const classnameSymbol = this.hasClassColumn ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)] : '';
     const statusSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-    const messageSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-    
+
     const colors = COLOR_SCHEMES[level];
 
     // Time in dark gray with symbol
@@ -163,8 +162,8 @@ export class Monitor {
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
       const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${statusSymbol}${RESET}`;
 
-      // Message in bright shade (symbol comes before message)
-      const messagePart = `${SEPARATOR_COLOR}${messageSymbol}${RESET} ${colors.message}${message}${RESET}`;
+      // Message in bright shade (no symbol before message)
+      const messagePart = `${colors.message}${message}${RESET}`;
 
       formatted = `${timePart} ${classPart} ${statusPart} ${messagePart}`;
     } else {
@@ -173,8 +172,8 @@ export class Monitor {
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
       const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${statusSymbol}${RESET}`;
 
-      // Message in bright shade (symbol comes before message)
-      const messagePart = `${SEPARATOR_COLOR}${messageSymbol}${RESET} ${colors.message}${message}${RESET}`;
+      // Message in bright shade (no symbol before message)
+      const messagePart = `${colors.message}${message}${RESET}`;
 
       formatted = `${timePart} ${statusPart} ${messagePart}`;
     }
