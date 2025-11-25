@@ -143,7 +143,7 @@ export class Monitor {
   private formatMessage(level: LogLevel, message: string, withColor: boolean): string {
     const timestamp = this.getTimestamp();
     const levelName = LEVEL_NAMES[level];
-    
+
     if (!withColor) {
       // Plain text version (for file output) - no symbols, just spaces
       if (this.hasClassColumn) {
@@ -156,36 +156,36 @@ export class Monitor {
 
     // Colored version (for console output) with symbols
     const colors = COLOR_SCHEMES[level];
-    
+
     // Time in dark gray with symbol
     const timePart = `${TIME_COLOR}${timestamp}${RESET} ${SEPARATOR_COLOR}${this.symbols.time}${RESET}`;
-    
+
     let formatted: string;
-    
+
     if (this.hasClassColumn) {
       // Classname with color and symbol
       const classColumn = `${colors.classname}${this.trimmedClassName}${RESET}`.padEnd(this.classColumnWidth + colors.classname.length + RESET.length);
       const classPart = `${classColumn} ${SEPARATOR_COLOR}${this.symbols.classname}${RESET}`;
-      
+
       // Status in mid/bright shade with symbol
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
       const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${this.symbols.status}${RESET}`;
-      
+
       // Message in bright shade (symbol comes before message)
       const messagePart = `${SEPARATOR_COLOR}${this.symbols.message}${RESET} ${colors.message}${message}${RESET}`;
-      
+
       formatted = `${timePart} ${classPart} ${statusPart} ${messagePart}`;
     } else {
       // Status in mid/bright shade with symbol
       const plainStatus = levelName.padEnd(STATE_COLUMN_WIDTH);
       const statusPart = `${colors.status}${plainStatus}${RESET} ${SEPARATOR_COLOR}${this.symbols.status}${RESET}`;
-      
+
       // Message in bright shade (symbol comes before message)
       const messagePart = `${SEPARATOR_COLOR}${this.symbols.message}${RESET} ${colors.message}${message}${RESET}`;
-      
+
       formatted = `${timePart} ${statusPart} ${messagePart}`;
     }
-    
+
     return formatted;
   }
 

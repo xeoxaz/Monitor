@@ -50,7 +50,7 @@ describe('Monitor', () => {
     test('timestamp format should be HH:MM:SS', () => {
       const monitor = new Monitor('TestClass');
       const timestampRegex = /\d{2}:\d{2}:\d{2}/;
-      
+
       // Capture console.log output
       const originalLog = console.log;
       let loggedMessage = '';
@@ -59,7 +59,7 @@ describe('Monitor', () => {
       };
 
       monitor.info('Test message');
-      
+
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
       expect(timestampRegex.test(stripped)).toBe(true);
@@ -170,7 +170,7 @@ describe('Monitor', () => {
       // Strip ANSI codes for comparison
       const stripped1 = messages[0].replace(/\x1b\[[0-9;]*m/g, '');
       const stripped2 = messages[1].replace(/\x1b\[[0-9;]*m/g, '');
-      
+
       // Both should have consistent structure (no brackets, with symbols)
       expect(stripped1).toMatch(/^\d{2}:\d{2}:\d{2}.*Short.*Info.*Message 1/);
       expect(stripped2).toMatch(/^\d{2}:\d{2}:\d{2}.*VeryLongClassName.*Info.*Message 2/);
@@ -191,7 +191,7 @@ describe('Monitor', () => {
 
       // Strip ANSI codes for comparison
       const stripped = loggedMessage.replace(/\x1b\[[0-9;]*m/g, '');
-      
+
       // Format should be time Level Message (no brackets)
       expect(stripped).toMatch(/^\d{2}:\d{2}:\d{2}.*Info.*Test message/);
 
