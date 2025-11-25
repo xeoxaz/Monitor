@@ -19,14 +19,32 @@ A simple, colorful logger class for Bun with TypeScript support, file logging, a
 
 ## Installation
 
+### Option 1: Install from GitHub (Recommended)
+
+Bun can install directly from GitHub:
+
+```bash
+bun add github:xeoxaz/Monitor
+```
+
+Or with a specific version/tag:
+
+```bash
+bun add github:xeoxaz/Monitor@v1.0.1
+```
+
+### Option 2: Install from npm (if published)
+
+If published to npm:
+
 ```bash
 bun add @frostal/monitor
 ```
 
-Or clone the repository:
+### Option 3: Clone and install locally
 
 ```bash
-git clone https://github.com/frostal/Monitor.git
+git clone https://github.com/xeoxaz/Monitor.git
 cd Monitor
 bun install
 ```

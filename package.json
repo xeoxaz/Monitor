@@ -31,8 +31,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/frostal/Monitor.git"
+    "url": "https://github.com/xeoxaz/Monitor.git"
   },
+  "bugs": {
+    "url": "https://github.com/xeoxaz/Monitor/issues"
+  },
+  "homepage": "https://github.com/xeoxaz/Monitor#readme",
   "engines": {
     "bun": ">=1.0.0"
   },

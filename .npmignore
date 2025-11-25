@@ -1,0 +1,37 @@
+# Test files
+tests/
+test-logs/
+*.test.ts
+
+# Examples
+examples/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Documentation (keep README and LICENSE)
+CONTRIBUTING.md
+CHANGELOG.md
+
+# Build artifacts
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
